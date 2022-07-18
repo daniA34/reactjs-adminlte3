@@ -2,36 +2,38 @@ import React from "react";
 import Sidebar from "../Sidebar";
 import Topbar from "../Topbar";
 import { useNavigate } from "react-router-dom";
-import config from './../../helpers/config.json';
+import config from '../../helpers/config.json';
 
-const ClientsAdd = () => {
-    let navigate = useNavigate(); 
+const UsersEdit = () => {
+    let navigate = useNavigate();
+    let userData = JSON.parse(sessionStorage.getItem("user")); 
     const cancel = () => {
-        var {clientName, rol, operatorID,clienteId} = document.forms[0]; 
-        var hasChanges = rol.value.length > 0 ||  clientName.value.length > 0 || operatorID.value.length >0 || clienteId.value.length >0;
+        var {userName,nickname,password,level} = document.forms[0]; 
+        var hasChanges = userName.value.length > 0 ||  nickname.value.length > 0 || password.value.length > 0 || level.value.length > 0;
         if(hasChanges){
             if(window.confirm("Existen cambios sin guardar. ¿Seguro de querer cancelar?")){
-                navigate("/clients");
+                navigate("/users");
             }
         } else {
-            navigate("/clients")
+            navigate("/users")
         }
     }
 
     const save = async (event) => {
         event.preventDefault();
-        var {clientName, rol} = document.forms[0];
+        var {userName,nickname,password,level} = document.forms[0];
         var errors = "";
-        errors += parseInt(rol.value) > 1 ? "no se puede dejar en blanco.\n": "";
+        errors += parseInt(userName.value !== nickname.value) ? "tiene qser diferente al nombre.\n": "";
+        errors += parseInt(password.value !== userName)? "No puede ser igual al nombre.\n": "";
         if(errors.length > 0){
             window.alert("Corrija los siguientes errores:\n"+errors);
         } else {
             const requestOptions = {
-                method: 'POST',
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json'},
-                body: JSON.stringify({ "operatorId": config.operatorId, "name": clientName.value,"rol": rol.value})
+                body: JSON.stringify({ "operatorId": config.operatorId, "name": userName.value, "nickname": nickname.value, "password": password.value, "level": level.value, "active": userData.active})
               }
-              fetch(config.apiURL+"clients", requestOptions).then((response) => {
+              fetch(config.apiURL+"users/"+userData.id, requestOptions).then((response) => {
                 switch(response.status){
                   case 400:
                     console.log("consulta mal formada");
@@ -44,8 +46,8 @@ const ClientsAdd = () => {
                 }
                 return response.json();
               }).then((result) => {
-                  window.alert("Regitro existoso");
-                  navigate("/clients");
+                  window.alert("Actualizacion existosa");
+                  navigate("/users");
               })
         }
     }
@@ -57,12 +59,12 @@ const ClientsAdd = () => {
                     <div className="container-fluid">
                         <div className="row mb-2">
                             <div className="col-sm-6">
-                                <h1>Incorporación de cliente</h1>
+                                <h1>Incorporación de Usuario</h1>
                             </div>
                             <div className="col-sm-6">
                                 <ol className="breadcrumb float-sm-right">
                                     <li className="breadcrumb-item"><a href="/">Cloud Sales</a></li>
-                                    <li className="breadcrumb-item"><a href="/clients">Clientes</a></li>
+                                    <li className="breadcrumb-item"><a href="/users">Usuario</a></li>
                                     <li className="breadcrumb-item active">Agregar</li>
                                 </ol>
                             </div>
@@ -74,28 +76,34 @@ const ClientsAdd = () => {
                         <div className="card-body">
                             <form onSubmit={save}>
                             <div className="row">
-                                <div className="col-12">
+                            <div className="col-6">
                                     <div className="form-group">
-                                        <label htmlFor="clientName" className="control-label">Nombre</label>
-                                        <input type="text" name="clientName" id="clientName" className="form-control"required />
+                                        <label htmlFor="usersName" className="control-label">Nombre</label>
+                                        <input type="text" name="usersName" id="usersName" className="form-control"required />
+                                    </div>
+                                </div>
+                                <div className="col-6">
+                                    <div className="form-group">
+                                        <label htmlFor="nickname" className="control-label">NicknamePassword</label>
+                                        <input type="text" name="nickname" id="nickname" className="form-control" required />
                                     </div>
                                 </div>
                                 <div className="col-4">
                                     <div className="form-group">
-                                        <label htmlFor="rol" className="control-label">rol</label>
-                                        <input type="text" name="rol" id="rol" className="form-control" required />
+                                        <label htmlFor="password" className="control-label">Password</label>
+                                        <input type="password" name="password" id="password" className="form-control" required />
                                     </div>
                                 </div>
                                 <div className="col-4">
                                     <div className="form-group">
-                                        <label htmlFor="operatorID" className="control-label">operatorID</label>
-                                        <input type="text" name="operatorID" id="operatorID" className="form-control" required />
+                                        <label htmlFor="level" className="control-label">Level</label>
+                                        <input type="text" name="level" id="level" className="form-control" required />
                                     </div>
                                 </div>
-                                <div className="d-flex justify-content-between">
+                            </div>
+                            <div className="d-flex justify-content-between">
                                 <button type="button" onClick={cancel} className="btn btn-secondary"><i className="fas fa-times"></i> Cancelar</button>
                                 <button type="submit" className="btn btn-primary"><i className="fas fa-save"></i> Guardar</button>
-                                </div>
                             </div>
                             </form>
                         </div>
@@ -106,4 +114,4 @@ const ClientsAdd = () => {
     )
 }
 
-export default ClientsAdd;
+export default UsersEdit;
